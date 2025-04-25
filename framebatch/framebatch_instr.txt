@@ -3,6 +3,9 @@
 #### By Jess Payne eejap@leeds.ac.uk ####
 #### Inspired by Andrew Watson github.com/andwatson ####
 
+########## THESE INSTRUCTIONS ARE OUT OF DATE AND ONLY WORKED WITH PREVIOUS JASMIN LOTUS SET-UP ############
+~~~~~~~ I WILL WORK ON UPDATED INSTRUCTIONS SOON (25/04/25) ~~~~~~~~~~
+
 1) Before you can process on JASMIN, you'll need an account and permissions. A guide for
 acquiring these can be found at:
 https://gitlab.com/comet_licsar/licsar_documentation/-/wikis/home
