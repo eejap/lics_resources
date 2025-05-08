@@ -4,7 +4,12 @@
 #### Inspired by Andrew Watson github.com/andwatson ####
 
 ########## THESE INSTRUCTIONS ARE OUT OF DATE AND ONLY WORKED WITH PREVIOUS JASMIN LOTUS SET-UP ############
-~~~~~~~ I WILL WORK ON UPDATED INSTRUCTIONS SOON (today being 25/04/25) ~~~~~~~~~~
+~~~~~~~ 25/04/25: I WILL WORK ON UPDATED INSTRUCTIONS SOON ~~~~~~~~~~
+~~~~~~~ 08/05/25: - I HAVE ATTEMPTED TO UPDATE THESE INSTRUCTIONS FOR LOTUS2 BUT I HAVEN'T REALLY TESTED IT OUT
+                  - THE SYSTEM IS VERY BUGGY STILL (cannot run slurm easily from scratch and the NLA in maintenance)
+                  - THINGS MAY THEREFORE STILL NOT WORK :(
+                  - IF YOU HAVE TRIED TO FIX YOUR ERROR BY CHECKING WITH SEVERAL PHD STUDENTS AND STILL GET ERROR
+                  - SEND ERROR TO MILAN ~~~~~~
 
 1) Before you can process on JASMIN, you'll need an account and permissions. A guide for
 acquiring these can be found at:
@@ -18,29 +23,33 @@ hpxfer (additional service)
 ... on JASMIN
 
 2a) You will also need access to the COMET queue!
-Email JASMIN cc'ing in Yasser/Milan to ask for access to the COMET queue (otherwise you have to use short-serial and
-won't be able to download anything from the COMET Portal when using LiCSBAS).
+08/05/25 - the COMET queue no longer exists but may in futureP: check status with Milan before doing the below
+Email JASMIN cc'ing in Milan to ask for access to the COMET queue
 
-3) Familiarise yourself with the slurm processing system:
-https://help.jasmin.ac.uk/category/4889-slurm
+3) Familiarise yourself with JASMIN documentation, especially:
+a) https://help.jasmin.ac.uk/docs/batch-computing/slurm-quick-reference/
+b) In general, https://help.jasmin.ac.uk/docs/batch-computing/ is a good reference when working on JASMIN
 
 4) Set up JASMIN fingerprints etc. Would recommend doing this on holly or other server rather than locally.
 Log into JASMIN via:
 a) exec ssh-agent $SHELL
 b) ssh-add ~/.ssh/id_rsa_jasmin
 c) ssh -X -A eejap002@login1.jasmin.ac.uk
+N.b. DO NOT USE LOGIN SERVERS FOR ANALYSIS OR JOBS, ONLY SCI SERVERS
 
-5) Log into a sci server. Avoid 3 and 6, e.g.:
-ssh -X -A eejap002@sci.jasmin.ac.uk
+5) Log into a sci server
+e.g. ssh -X -A eejap002@sci-vm-01.jasmin.ac.uk
+a) There are now virtual and physical sci servers
+b) Virtual machines (e.g. @sci-vm-01.jasmin.ac.uk) are lower spec
+c) Physical machines (e.g. @sci-ph-01.jasmin.ac.uk) have more cores, higher RAM and higher mem/user limits
+d) I think you can use either but check https://help.jasmin.ac.uk/docs/interactive-computing/sci-servers/ for info
 
 6) Get LiCS commands up and running:
-a) Add to your ~/.bashrc file the line:
-module use "/gws/smf/j04/nceo_geohazards/software/Modules/"
 a) Run:
 module load licsar_framebatch_testing
 b) Run:
-b) source /gws/smf/j04/nceo_geohazards/software/mambalics/load_mambalics.rc
-... you will now have access to licsar_framebatch codes (and many other codes created by Milan and Yasser to do all things LiCS).
+source /gws/smf/j04/nceo_geohazards/software/mambalics/load_mambalics.rc
+... you will now have access to licsar_framebatch codes (and many other codes managed by Milan to do all things LiCS).
 ... see https://comet-licsar.github.io/index.html# and https://gitlab.com/comet_licsar for more info.
 
 7) You will have a number of variables set e.g.:
@@ -85,23 +94,27 @@ mkdir sbatch_logs
 ... you are ready to process :)
 
 15) Example command for gapfill:
-sbatch -A comet -p comet -o sbatch_logs/$frame.gapfill.out -e sbatch_logs/$frame.gapfill.err -t 72:00:00 framebatch_update_frame.sh -k -P $frame gapfill 20141001 20190901
+OLD COMMAND, WON'T WORK: sbatch -A comet -p comet -o sbatch_logs/$frame.gapfill.out -e sbatch_logs/$frame.gapfill.err -t 72:00:00 framebatch_update_frame.sh -k -P $frame gapfill 20141001 20190901
+NEW COMMAND, MIGHT WORK: sbatch --account=comet_lics --partition=standard --qos=long -o sbatch_logs/$frame.gapfill.out -e sbatch_logs/$frame.gapfill.err -t 72:00:00 framebatch_update_frame.sh -k -P $frame gapfill 20141001 20190901
 
 What does this mean?
+(check https://help.jasmin.ac.uk/docs/batch-computing/how-to-submit-a-job/ for queue/parition updates/info)
 sbatch : submits a job to the queue.
--A and -P : requests jobs go to the comet queue to process.
+--account : specifies which project account to run the job against
+--partition : specifies the partition to send the job to
+--long : specifies the queue to send the job to
 -o sbatch_logs/$frame.gapfill.out : writes the output to a text file.
 -e sbatch_logs/$frame.gapfill.err : writes any errors to a text file.
 -t 72:00:00 : requests a max runtime of 72 hours.
 framebatch_update_frame.sh : our command.
 -k : keeps the processing directory after completely (deletes by default).
 -P : uses comet queue for sub-jobs.
-$frame : frame of interest.
+$frame : frame of interest (set this before running command)
 gapfill 20141001 20190901 : runs gapfill between these two dates.
 
 ...would advise being generous with your gap. Extend dates at least 1 month either side of gap to ensure gap is filled 'strongly'.
 
-Run this command in your BATCH_CACHE_DIR (here batchdir).
+Run this command in your $BATCH_CACHE_DIR (here batchdir).
 This command will create a frame directory to collect the outputs of gapfilling.
 Remember .err and .out files are collected in sbatch_logs outside of this frame directory.
 
@@ -150,11 +163,11 @@ You can then either look through these using display on jasmin, or copy them loc
 rm -rf 20150911_20151017
 
 22) Store good ifgs to the public portal using:
-sbatch -A comet -p comet -o sbatch_logs/$frame.store.out -e sbatch_logs/$frame.store.err -t 72:00:00 store_to_curdir.sh $frame
+sbatch --account=comet_lics --partition=standard --qos=long -o sbatch_logs/$frame.store.out -e sbatch_logs/$frame.store.err -t 72:00:00 store_to_curdir.sh $frame
 ... run this in $BATCH_CACHE_DIR (batchdir)
 
 23) Also update GACOS corrections on the portal using:
-sbatch -A comet -p comet -o sbatch_logs/$frame.gacos.out -e sbatch_logs/$frame.gacos.err -t 72:00:00 framebatch_update_gacos.sh $frame
+sbatch --account=comet_lics --partition=standard --qos=long -o sbatch_logs/$frame.gacos.out -e sbatch_logs/$frame.gacos.err -t 72:00:00 framebatch_update_gacos.sh $frame
 ... also run in $BATCH_CACHE_DIR (batchdir)
 
 Andrew W ran ./gacos_check.sh to check which epochs needed GACOS. This didn't really work for me, and anyway the LiCS Portal tells you
