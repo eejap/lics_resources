@@ -17,7 +17,6 @@ https://gitlab.com/comet_licsar/licsar_documentation/-/wikis/home
 comet_lics (group workspace)
 nceo_geohazards (group workspace)
 nceo_lics (group workspace)
-hpxfer (additional service)
 ... on JASMIN
 
 2a) You will also need access to the COMET queue!
